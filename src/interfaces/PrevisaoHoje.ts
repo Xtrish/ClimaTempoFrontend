@@ -6,5 +6,6 @@ export interface PrevisaoHoje {
   umidade: number;
   condicao: string;
   icone: string;
-  chuva: string;
+  chuva: string;  
+  data: string;
 }

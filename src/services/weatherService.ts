@@ -27,3 +27,15 @@ export const removerFavorito = async (id: number) => {
   const response = await axios.delete(`${API_FAVORITOS}/${id}`);
   return response.data;
 };
+
+export const buscarPrevisaoPorDias = async (
+  cidade: string,
+  dias: number
+): Promise<PrevisaoHoje[]> => {
+  const response = await fetch(
+    `https://localhost:44337/api/Clima/previsao?cidade=${encodeURIComponent(cidade)}&dias=${dias}`
+  );
+
+  if (!response.ok) throw new Error('Erro ao buscar previsão estendida');
+  return response.json();
+};
