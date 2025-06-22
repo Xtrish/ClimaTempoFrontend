@@ -34,27 +34,39 @@ function App() {
     carregarFavoritos();
   }, []);
 
-  const carregarFavoritos = async () => {
-    try {
-      const lista = await listarFavoritos();
-      const favoritosDetalhados = lista.map((fav: any): FavoritoDetalhado => ({
-        id: fav.id,
-        cidade: fav.nome,
-        temperaturaAtual: fav.temperaturaCelsius,
-        temperaturaMin: fav.temperaturaMin,
-        temperaturaMax: fav.temperaturaMax,
-        umidade: fav.umidade,
-        condicao: fav.descricao,
-        icone: fav.icone,
-        chuva: fav.chuva,
-      }));
+  useEffect(() => {
+  localStorage.setItem('favoritos', JSON.stringify(favoritos));
+}, [favoritos]);
 
-      setFavoritos(favoritosDetalhados);
-    } catch (err) {
-      console.error('Erro ao buscar favoritos:', err);
-      setErro('Erro ao carregar favoritos');
-    }
-  };
+
+const carregarFavoritos = async () => {
+  try {
+    const favoritosLocal = localStorage.getItem('favoritos');
+    if (favoritosLocal) {
+      setFavoritos(JSON.parse(favoritosLocal));
+    }
+
+    const lista = await listarFavoritos();
+    const favoritosDetalhados = lista.map((fav: any): FavoritoDetalhado => ({
+      id: fav.id,
+      cidade: fav.nome,
+      temperaturaAtual: fav.temperaturaCelsius,
+      temperaturaMin: fav.temperaturaMin,
+      temperaturaMax: fav.temperaturaMax,
+      umidade: fav.umidade,
+      condicao: fav.descricao,
+      icone: fav.icone,
+      chuva: fav.chuva,
+    }));
+
+    setFavoritos(favoritosDetalhados);
+    localStorage.setItem('favoritos', JSON.stringify(favoritosDetalhados));
+  } catch (err) {
+    console.error('Erro ao buscar favoritos:', err);
+    setErro('Erro ao carregar favoritos');
+  }
+};
+
 
   const buscarClima = async (cidade: string) => {
     try {
@@ -72,30 +84,35 @@ function App() {
     }
   };
 
-  const handleAdicionarFavorito = async () => {
-    try {
-      if (!dadosClima) return;
-      await adicionarFavorito(dadosClima.cidade);
-      setNotificacao('Cidade adicionada aos favoritos!');
-      carregarFavoritos();
-    } catch {
-      setErro('Erro ao adicionar aos favoritos.');
-    }
-  };
+ const handleAdicionarFavorito = async () => {
+  try {
+    if (!dadosClima) return;
+    await adicionarFavorito(dadosClima.cidade);
+    setNotificacao('Cidade adicionada aos favoritos!');
 
-  const handleRemoverFavorito = async (id: number) => {
-    try {
-      await removerFavorito(id);
-      setNotificacao('Cidade removida dos favoritos.');
-      carregarFavoritos();
-    } catch {
-      setErro('Erro ao remover favorito.');
-    }
-  };
+    await carregarFavoritos();
+  } catch {
+    setErro('Erro ao adicionar aos favoritos.');
+  }
+};
+
+
+ const handleRemoverFavorito = async (id: number) => {
+  try {
+    await removerFavorito(id);
+    setNotificacao('Cidade removida dos favoritos.');
+
+    await carregarFavoritos();
+  } catch {
+    setErro('Erro ao remover favorito.');
+  }
+};
+
 
   return (
     <>
       <CssBaseline />
+
       <Box
         sx={{
           minHeight: '100vh',
@@ -107,7 +124,7 @@ function App() {
           px: 2,
         }}
       >
-        <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 500 }}>
+        <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 1200 }}>
           <Typography variant="h4" align="center" gutterBottom>
             Previsão do Tempo
           </Typography>
@@ -155,31 +172,32 @@ function App() {
           )}
 
           {mostrarFavoritos && (
-            <>
-              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => setMostrarFavoritos(false)}
-                >
-                  Ocultar Favoritos
-                </Button>
-              </Box>
-
-              {favoritos.map((f) => (
-                <DailyForecastCard
-                  key={f.id}
-                  dia={f.cidade}
-                  icone={f.icone}
-                  condicao={f.condicao}
-                  temperaturaAtual={f.temperaturaAtual}
-                  min={f.temperaturaMin}
-                  max={f.temperaturaMax}
-                  umidade={f.umidade}
-                  chuva={f.chuva}
-                  onRemover={() => handleRemoverFavorito(f.id)}
-                />
-              ))}
+            <>  
+              <Box
+  sx={{
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 2,
+    justifyContent: 'center',
+    mt: 2,
+  }}
+>
+  {favoritos.map((f) => (
+    <Box key={f.id} sx={{ flex: '1 1 250px', maxWidth: 300 }}>
+      <DailyForecastCard
+        dia={f.cidade}
+        icone={f.icone}
+        condicao={f.condicao}
+        temperaturaAtual={f.temperaturaAtual}
+        min={f.temperaturaMin}
+        max={f.temperaturaMax}
+        umidade={f.umidade}
+        chuva={f.chuva}
+        onRemover={() => handleRemoverFavorito(f.id)}
+      />
+    </Box>
+  ))}
+</Box>
 
               <Button
                 variant="outlined"

@@ -36,13 +36,17 @@ const DailyForecastCard: React.FC<DailyForecastCardProps> = ({
         mx: 'auto',
         mt: 3,
         borderRadius: 2,
+        minHeight: 360,
         backgroundColor: '#ffffff',
         boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)',
         border: '1px solid #e0e0e0',
         position: 'relative',
       }}
     >
-      <CardContent sx={{ px: 3, py: 2 }}>
+      <CardContent sx={{ px: 3, py: 2,display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    height: '100%', }}>
         {onRemover && (
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
             <IconButton
